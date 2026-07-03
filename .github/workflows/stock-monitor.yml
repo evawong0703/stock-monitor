@@ -9,6 +9,10 @@ jobs:
   check-stock:
     runs-on: ubuntu-latest
 
+    env:
+      PUSH_API_URL: ${{ secrets.PUSH_API_URL }}
+      PUSH_API_SECRET: ${{ secrets.PUSH_API_SECRET }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
