@@ -1,4 +1,4 @@
-name: Meaco Stock Monitor
+name: Meaco Stock Monitor V2
 
 on:
   schedule:
@@ -8,6 +8,7 @@ on:
 jobs:
   check-stock:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     env:
       PUSH_API_URL: ${{ secrets.PUSH_API_URL }}
@@ -28,5 +29,4 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run monitor
-        run: |
-          python scripts/monitor.py
+        run: python scripts/monitor.py
