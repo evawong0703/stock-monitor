@@ -115,6 +115,9 @@ def send_push_notification(product_name, product_url):
     api_url = os.getenv("PUSH_API_URL")
     secret = os.getenv("PUSH_API_SECRET")
 
+    print("PUSH_API_URL =", api_url)
+    print("PUSH_API_SECRET exists =", bool(secret))
+
     if not api_url or not secret:
         print("Push API not configured. Skipping notification.")
         return False
@@ -130,7 +133,11 @@ def send_push_notification(product_name, product_url):
         timeout=20,
     )
 
-    print("Push response:", response.status_code, response.text)
+   
+    print("Final URL =", response.url)
+    print("Status =", response.status_code)
+    print("Content-Type =", response.headers.get("content-type"))
+    print("Body =", response.text[:200])
     return response.ok
 
 
