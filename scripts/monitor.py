@@ -102,6 +102,9 @@ def check_stock_with_html(product_url):
     return True
 
 
+from playwright.sync_api import sync_playwright
+
+
 def check_stock_currys(product_url):
     print("Currys: using Playwright browser mode")
 
@@ -124,43 +127,53 @@ def check_stock_currys(product_url):
         )
 
         try:
-            page.goto(product_url, wait_until="domcontentloaded", timeout=45000)
+            page.goto(
+                product_url,
+                wait_until="domcontentloaded",
+                timeout=45000,
+            )
+
+            # 等 JavaScript Render 完
             page.wait_for_timeout(5000)
 
-            html = page.content().lower()
             title = page.title()
+            html = page.content().lower()
+            text = page.locator("body").inner_text().lower()
 
             print("Currys page title:", title)
 
-            if "access denied" in html or "forbidden" in html:
-                print("Currys: access denied / forbidden page detected")
-                return False
-
-            out_words = [
-                "out of stock",
-                "currently unavailable",
-                "unavailable",
-                "sold out",
-                "sorry, this product is currently unavailable",
-            ]
-
+            # ===== 第一優先：有 Add to Basket 就一定有貨 =====
             in_words = [
                 "add to basket",
                 "add to trolley",
                 "add to cart",
             ]
 
-            for word in out_words:
-                if word in html:
-                    print(f"Currys: found out-of-stock keyword '{word}'")
-                    return False
-
             for word in in_words:
-                if word in html:
+                if word in text or word in html:
                     print(f"Currys: found in-stock keyword '{word}'")
                     return True
 
-            print("Currys: unclear status, treating as out of stock")
+            # ===== 第二優先：再判斷無貨 =====
+            out_words = [
+                "out of stock",
+                "currently unavailable",
+                "sold out",
+                "email me when back in stock",
+                "notify me",
+            ]
+
+            for word in out_words:
+                if word in text:
+                    print(f"Currys: found out-of-stock keyword '{word}'")
+                    return False
+
+            # ===== 最後：未知情況 =====
+            print("Currys: unable to determine stock status.")
+            return False
+
+        except Exception as e:
+            print("Currys Playwright error:", e)
             return False
 
         finally:
